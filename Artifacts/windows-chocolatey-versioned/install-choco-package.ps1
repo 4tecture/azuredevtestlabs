@@ -166,9 +166,14 @@ function Validate-Params
     param(
     )
 
-    if ([string]::IsNullOrEmpty($Packages))
+    if ([string]::IsNullOrEmpty($Package))
     {
-        throw 'Packages parameter is required.'
+        throw 'Package parameter is required.'
+    }
+
+    if ([string]::IsNullOrEmpty($Version))
+    {
+        throw 'Version parameter is required.'
     }
 }
 
@@ -191,7 +196,7 @@ try
     Write-Host 'Ensuring latest Chocolatey version is installed.'
     Ensure-Chocolatey -ChocoExePath "$choco"
 
-    Write-Host "Preparing to install Chocolatey packages: $Package."
+    Write-Host "Preparing to install Chocolatey package: $Package."
     Install-Package -ChocoExePath "$choco" -Package $Package -Version $Version
 
     Write-Host "`nThe artifact was applied successfully.`n"

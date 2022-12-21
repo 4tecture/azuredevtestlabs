@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/Azure/azure-devtestlab/master/schemas/2016-11-28/dtlArtifacts.json",
-    "title": "Install Chocolatey Packages with explicit versions",
+    "title": "Install Chocolatey Package with explicit versions",
     "publisher": "4tecture GmbH",
     "description": "Installs the Chocolatey package manager along with a user selected package with an explicit version. Based on original task: https://github.com/Azure/azure-devtestlab/blob/master/Artifacts/windows-chocolatey/Artifactfile.json",
     "tags": [
@@ -24,13 +24,13 @@
             "type": "bool",
             "defaultValue": true,
             "displayName": "Allow Empty Checksums",
-            "description": "Should packages with empty checksums be allowed to be installed? This defaults to true to avoid breaking the behavior of past versions of this artifact and to ease the use of non https sources such as http/ftp, but allowing empty checksums is not recommended by chocolatey (see https://chocolatey.org/docs/commandsupgrade)"
+            "description": "Should package with empty checksums be allowed to be installed? This defaults to true to avoid breaking the behavior of past versions of this artifact and to ease the use of non https sources such as http/ftp, but allowing empty checksums is not recommended by chocolatey (see https://chocolatey.org/docs/commandsupgrade)"
         },
         "ignoreChecksums": {
             "type": "bool",
             "defaultValue": false,
             "displayName": "Ignore Checksums",
-            "description": "Should packages that don't match their checksums be allowed to be installed? Setting this to true is not recommended by chocolatey (see https://github.com/chocolatey/choco/issues/112), but may be necessary if you have a dependency on a community maintained package that does not update its checksum to match a software provider's upgrade in a timely manner."
+            "description": "Should package that don't match their checksums be allowed to be installed? Setting this to true is not recommended by chocolatey (see https://github.com/chocolatey/choco/issues/112), but may be necessary if you have a dependency on a community maintained package that does not update its checksum to match a software provider's upgrade in a timely manner."
         }
     },
     "runCommand": {
