@@ -1,0 +1,1 @@
+Invoke-Command { reg import disable_settings_on_user_logon.reg }
