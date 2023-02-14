@@ -1,3 +1,4 @@
+# Installing PowerShell on Ubuntu
 # script source: Microsoft Docs (https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu?view=powershell-7.3)
 
 # Update the list of packages
@@ -12,3 +13,9 @@ sudo dpkg -i packages-microsoft-prod.deb
 sudo apt-get update
 # Install PowerShell
 sudo apt-get install -y powershell
+
+
+# Install the Azure CLI on Linux
+# script source: Micrsoft Docs (https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt)
+
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
