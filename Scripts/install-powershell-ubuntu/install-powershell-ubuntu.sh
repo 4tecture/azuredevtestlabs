@@ -1,12 +1,14 @@
+# script source: Microsoft Docs (https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu?view=powershell-7.3)
+
 # Update the list of packages
-apt-get update
+sudo apt-get update
 # Install pre-requisite packages.
-apt-get install -y wget apt-transport-https software-properties-common
+sudo apt-get install -y wget apt-transport-https software-properties-common
 # Download the Microsoft repository GPG keys
 wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
 # Register the Microsoft repository GPG keys
-dpkg -i packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
 # Update the list of packages after we added packages.microsoft.com
-apt-get update
+sudo apt-get update
 # Install PowerShell
-apt-get install -y powershell
+sudo apt-get install -y powershell
