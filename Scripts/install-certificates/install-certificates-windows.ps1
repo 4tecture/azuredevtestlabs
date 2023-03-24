@@ -5,7 +5,7 @@ Installs an existing certificate to the LocalMachine store.
 Param(
     [ValidateNotNullOrEmpty()][string] $certificateName,
     [ValidateNotNullOrEmpty()][string] $base64cert,
-    [ValidateNotNullOrEmpty()][string] $certificatePassword,
+    [string] $certificatePassword = '',
     [string] $certStoreLocation = 'LocalMachine\My')
 
 ##################################################################################################
@@ -61,17 +61,23 @@ try {
         Start-Process powershell.exe -Verb runas -ArgumentList $arguments -Wait
     }
     else {
-        $securePassword = ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force
-        $certificatePassword = "deleted"
-
         $tempFilePath = [System.IO.Path]::GetTempFileName()
         Write-Host "Temp file path '$tempFilePath'" 
 
         [System.IO.File]::WriteAllBytes($tempFilePath, [System.Convert]::FromBase64String($base64cert))
         Write-Host "Certificate saved"
+        
+        if ($certificatePassword) {
+            $securePassword = ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force
+            $certificatePassword = "deleted"
 
-        Get-ChildItem -Path $tempFilePath | Import-PfxCertificate -CertStoreLocation Cert:\$($certStoreLocation) -Exportable -Password $securePassword
-        Write-Host "Certificate $certificateName added to the $($certStoreLocation) store succesfully."
+            Get-ChildItem -Path $tempFilePath | Import-PfxCertificate -CertStoreLocation Cert:\$($certStoreLocation) -Exportable -Password $securePassword
+            Write-Host "Certificate $certificateName added to the $($certStoreLocation) store succesfully."
+        }
+        else {
+            Get-ChildItem -Path $tempFilePath | Import-Certificate -CertStoreLocation Cert:\$($certStoreLocation)
+            Write-Host "Certificate $certificateName added to the $($certStoreLocation) store succesfully."
+        }
 
         Remove-Item -Path "$tempFilePath" -Force
         Write-Host "Deleted the temp file $tempFilePath"
