@@ -1,12 +1,9 @@
-<#
-Installs an existing certificate to the LocalMachine store.
-#>
-[CmdletBinding()]
 Param(
-    [ValidateNotNullOrEmpty()][string] $certificateName,
-    [ValidateNotNullOrEmpty()][string] $base64cert,
+    [Parameter(Mandatory = $true)][string] $certificateName,
+    [Parameter(Mandatory = $true)][string] $base64cert,
     [string] $certificatePassword = '',
-    [string] $certStoreLocation = 'LocalMachine\My')
+    [string] $certStoreLocation = 'LocalMachine\My'
+)
 
 ##################################################################################################
 #
@@ -51,37 +48,30 @@ trap {
 #
 
 try {
-    Write-Host "Installing certificate $certificateName"
+    Write-Host "Installing certificate '$($certificateName)' on location '$($certStoreLocation)'"
 
-    if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-        # Build up the deploy arguments.
-        $arguments = "-file `"{0}`"" -f $script:MyInvocation.MyCommand.Path
-    
-        # Start the new process.
-        Start-Process powershell.exe -Verb runas -ArgumentList $arguments -Wait
-    }
-    else {
-        $tempFilePath = [System.IO.Path]::GetTempFileName()
-        Write-Host "Temp file path '$tempFilePath'" 
+    $tempFilePath = [System.IO.Path]::GetTempFileName()
+    Write-Host "Temp file path '$tempFilePath'" 
 
-        [System.IO.File]::WriteAllBytes($tempFilePath, [System.Convert]::FromBase64String($base64cert))
-        Write-Host "Certificate saved"
+    [System.IO.File]::WriteAllBytes($tempFilePath, [System.Convert]::FromBase64String($base64cert))
+    Write-Host "Certificate saved"
         
-        # if ($certificatePassword) {
-        #     $securePassword = ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force
-        #     $certificatePassword = "deleted"
+    # if ($certificatePassword) {
+    Write-Host "Use Certificate Password: $($certificatePassword)"
 
-        #     Get-ChildItem -Path $tempFilePath | Import-PfxCertificate -CertStoreLocation Cert:\$($certStoreLocation) -Exportable -Password $securePassword
-        #     Write-Host "Certificate $certificateName added to the $($certStoreLocation) store succesfully."
-        # }
-        # else {
-        Get-ChildItem -Path $tempFilePath | Import-Certificate -CertStoreLocation Cert:\$($certStoreLocation)
-        Write-Host "Certificate $certificateName added to the $($certStoreLocation) store succesfully."
-        # }
+    #     $securePassword = ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force
+    #     $certificatePassword = "deleted"
 
-        Remove-Item -Path "$tempFilePath" -Force
-        Write-Host "Deleted the temp file $tempFilePath"
-    }
+    #     Get-ChildItem -Path "$($tempFilePath)" | Import-PfxCertificate -CertStoreLocation "Cert:\$($certStoreLocation)" -Exportable -Password "$($securePassword)"
+    #     Write-Host "Certificate $($certificateName) added to the $($certStoreLocation) store succesfully."
+    # }
+    #else {
+    Get-ChildItem -Path "$($tempFilePath)" | Import-Certificate -CertStoreLocation "Cert:\$($certStoreLocation)"
+    Write-Host "Certificate $($certificateName) added to the $($certStoreLocation) store succesfully."
+    # }
+
+    Remove-Item -Path "$($tempFilePath)" -Force
+    Write-Host "Deleted the temp file $($tempFilePath)"
 
     Write-Host "`nThe artifact was applied successfully.`n"
 }
