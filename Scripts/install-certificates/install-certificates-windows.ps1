@@ -14,12 +14,6 @@ Param(
 #       This is necessary to ensure we capture errors inside the try-catch-finally block.
 $ErrorActionPreference = "Stop"
 
-# Ensure we set the working directory to that of the script.
-pushd $PSScriptRoot
-
-# Ensure that current process can run scripts. 
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force 
-
 ##################################################################################################
 #
 # Handle all errors in this script.
@@ -47,34 +41,29 @@ trap {
 # Main execution block.
 #
 
-try {
-    Write-Host "Installing certificate '$($certificateName)' on location '$($certStoreLocation)'"
+Write-Host "Installing certificate '$($certificateName)' on location '$($certStoreLocation)'"
 
-    $tempFilePath = [System.IO.Path]::GetTempFileName()
-    Write-Host "Temp file path '$tempFilePath'" 
+$tempFilePath = [System.IO.Path]::GetTempFileName()
+Write-Host "Temp file path '$tempFilePath'" 
 
-    [System.IO.File]::WriteAllBytes($tempFilePath, [System.Convert]::FromBase64String($base64cert))
-    Write-Host "Certificate saved"
+[System.IO.File]::WriteAllBytes($tempFilePath, [System.Convert]::FromBase64String($base64cert))
+Write-Host "Certificate saved"
 
-    if ($certificatePassword) {
-        Write-Host "Certificate Password is set, import certificate as PFX (X.509)"
+if ($certificatePassword) {
+    Write-Host "Certificate Password is set, import certificate as PFX (X.509)"
 
-        $securePassword = ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force
-        $certificatePassword = "deleted"
+    $securePassword = ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force
+    $certificatePassword = "deleted"
 
-        Get-ChildItem -Path "$($tempFilePath)" | Import-PfxCertificate -CertStoreLocation "Cert:\$($certStoreLocation)" -Exportable -Password "$($securePassword)"
-        Write-Host "PFX Certificate $($certificateName) added to the $($certStoreLocation) store succesfully."
-    }
-    else {
-        Get-ChildItem -Path "$($tempFilePath)" | Import-Certificate -CertStoreLocation "Cert:\$($certStoreLocation)"
-        Write-Host "Certificate $($certificateName) added to the $($certStoreLocation) store succesfully."
-    }
-
-    Remove-Item -Path "$($tempFilePath)" -Force
-    Write-Host "Deleted the temp file $($tempFilePath)"
-
-    Write-Host "`nThe artifact was applied successfully.`n"
+    Get-ChildItem -Path "$($tempFilePath)" | Import-PfxCertificate -CertStoreLocation "Cert:\$($certStoreLocation)" -Exportable -Password "$($securePassword)"
+    Write-Host "PFX Certificate $($certificateName) added to the $($certStoreLocation) store succesfully."
 }
-finally {
-    popd
+else {
+    Get-ChildItem -Path "$($tempFilePath)" | Import-Certificate -CertStoreLocation "Cert:\$($certStoreLocation)"
+    Write-Host "Certificate $($certificateName) added to the $($certStoreLocation) store succesfully."
 }
+
+Remove-Item -Path "$($tempFilePath)" -Force
+Write-Host "Deleted the temp file $($tempFilePath)"
+
+Write-Host "`nThe artifact was applied successfully.`n"
