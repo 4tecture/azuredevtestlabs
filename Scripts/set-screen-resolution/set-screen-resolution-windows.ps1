@@ -1,6 +1,7 @@
 Param(
     [int]$Width = 1920,
-    [int]$Height = 1080
+    [int]$Height = 1080,
+    [string]$UserAccount = 'Guest'
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,23 +23,34 @@ trap {
     exit -1
 }
 
-Get-ChildItem -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Video\' | ForEach-Object {
-    $KeyPath = $_.PSPath + '\0000'
-    $KeyPrefix = 'DefaultSettings.'
+$baseKey = 'HKLM:\SYSTEM\CurrentControlSet\Control\Video\'
+$baseKeySubPath = '\0000'
 
+Get-ChildItem -Path $baseKey | ForEach-Object {
+    # Set ACL access rule
+    if ($UserAccount) {
+        Write-Host "Set ACL access rule for user $($UserAccount)"
+        $ke = Get-Acl "$($baseKey)$($_.PSChildname)$($baseKeySubPath)"
+        $rule = New-Object System.Security.AccessControl.RegistryAccessRule ($UserAccount, "FullControl", "Allow")
+        $ke.SetAccessRule($rule)
+        $ke | Set-Acl -Path "$($baseKey)$($_.PSChildname)$($baseKeySubPath)"
+    }
+
+    # set registry keys for default resolution
+    $KeyPath = $_.PSPath + $baseKeySubPath
     Write-Host "Set default screen resolution for '$($KeyPath)' to $($Width)x$($Height)"
     try {
-        Get-ItemProperty -Path $KeyPath -Name "$($KeyPrefix)XResolution"
+        Get-ItemProperty -Path $KeyPath -Name "DefaultSettings.XResolution"
 
-        Set-ItemProperty -Path $KeyPath -Name "$($KeyPrefix)XResolution" -Value $Width
-        Set-ItemProperty -Path $KeyPath -Name "$($KeyPrefix)YResolution" -Value $Height
+        Set-ItemProperty -Path $KeyPath -Name "DefaultSettings.XResolution" -Value $Width
+        Set-ItemProperty -Path $KeyPath -Name "DefaultSettings.YResolution" -Value $Height
     }  
     catch [System.Management.Automation.ItemNotFoundException] {  
-        New-ItemProperty -Path $KeyPath -Name "$($KeyPrefix)XResolution" -Value $Width -Force
-        New-ItemProperty -Path $KeyPath -Name "$($KeyPrefix)YResolution" -Value $Height -Force
+        New-ItemProperty -Path $KeyPath -Name "DefaultSettings.XResolution" -Value $Width -Force
+        New-ItemProperty -Path $KeyPath -Name "DefaultSettings.YResolution" -Value $Height -Force
     }  
     catch {
-        New-ItemProperty -Path $KeyPath -Name "$($KeyPrefix)XResolution" -Value $Width -PropertyType DWORD -Force
-        New-ItemProperty -Path $KeyPath -Name "$($KeyPrefix)YResolution" -Value $Height -PropertyType DWORD -Force
+        New-ItemProperty -Path $KeyPath -Name "DefaultSettings.XResolution" -Value $Width -PropertyType DWORD -Force
+        New-ItemProperty -Path $KeyPath -Name "DefaultSettings.YResolution" -Value $Height -PropertyType DWORD -Force
     } 
 }
