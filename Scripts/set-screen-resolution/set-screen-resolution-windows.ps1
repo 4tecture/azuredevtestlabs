@@ -1,7 +1,7 @@
 Param(
     [int]$Width = 1920,
     [int]$Height = 1080,
-    [string]$UserAccount = 'Guest'
+    [string]$UserAccount = ''
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,13 +28,15 @@ $baseKeySubPath = '\0000'
 
 Get-ChildItem -Path $baseKey | ForEach-Object {
     # Set ACL access rule
-    if ($UserAccount) {
-        Write-Host "Set ACL access rule for user $($UserAccount)"
-        $ke = Get-Acl "$($baseKey)$($_.PSChildname)$($baseKeySubPath)"
-        $rule = New-Object System.Security.AccessControl.RegistryAccessRule ($UserAccount, "FullControl", "Allow")
-        $ke.SetAccessRule($rule)
-        $ke | Set-Acl -Path "$($baseKey)$($_.PSChildname)$($baseKeySubPath)"
+    if (-not $UserAccount) {
+        $UserAccount = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
     }
+
+    Write-Host "Set ACL access rule for user $($UserAccount)"
+    $ke = Get-Acl "$($baseKey)$($_.PSChildname)$($baseKeySubPath)"
+    $rule = New-Object System.Security.AccessControl.RegistryAccessRule ($UserAccount, "FullControl", "Allow")
+    $ke.SetAccessRule($rule)
+    $ke | Set-Acl -Path "$($baseKey)$($_.PSChildname)$($baseKeySubPath)"
 
     # set registry keys for default resolution
     $KeyPath = $_.PSPath + $baseKeySubPath
